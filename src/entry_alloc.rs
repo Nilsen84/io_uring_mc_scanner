@@ -1,23 +1,23 @@
 pub struct EntryAllocator<T> {
-    connections: Vec<Option<T>>,
+    entries: Vec<Option<T>>,
     free_indices: Vec<usize>
 }
 
 impl<T> EntryAllocator<T> {
     pub fn new(size: usize) -> Self {
         Self {
-            connections: std::iter::repeat_with(|| None).take(size).collect(),
+            entries: std::iter::repeat_with(|| None).take(size).collect(),
             free_indices: (0..size).collect()
         }
     }
 
-    pub fn alloc(&mut self, conn: T) -> Option<(usize, &T)> {
+    pub fn alloc(&mut self, entry: T) -> Option<(usize, &T)> {
         let idx = self.free_indices.pop()?;
-        Some((idx, self.connections[idx].insert(conn)))
+        Some((idx, self.entries[idx].insert(entry)))
     }
 
     pub fn dealloc(&mut self, idx: usize) -> Option<T> {
-        match self.connections[idx].take() {
+        match self.entries[idx].take() {
             Some(conn) => {
                 self.free_indices.push(idx);
                 Some(conn)
@@ -31,10 +31,10 @@ impl<T> EntryAllocator<T> {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.free_indices.len() == self.connections.len()
+        self.free_indices.len() == self.entries.len()
     }
 
     pub fn size(&self) -> usize {
-        self.connections.len() - self.free_indices.len()
+        self.entries.len() - self.free_indices.len()
     }
 }
